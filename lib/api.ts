@@ -1,6 +1,6 @@
 import type { Category, Item, Kind, PublicUser, University } from "./types";
 
-const API = "/api/v1";
+const API = "`https://api.topdim.wwww.uz`";
 const TOKEN_KEY = "topdim_token";
 const USER_KEY = "topdim_user";
 

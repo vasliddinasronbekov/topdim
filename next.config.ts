@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 
+const apiOrigin = process.env.TOPDIM_API_ORIGIN ?? "https://api.topdim.wwww.uz";
+
 const nextConfig: NextConfig = {
   async rewrites() {
-    return [{ source: "/api/v1/:path*", destination: "http://52.65.192.133:4000/api/v1/:path*" }];
+    return [{ source: "/api/v1/:path*", destination: `${apiOrigin}/api/v1/:path*` }];
   },
   turbopack: {
     rules: {
