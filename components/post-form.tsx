@@ -1,88 +1,15 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
-import { createItemAction } from "@/lib/actions";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { CATEGORIES, KINDS } from "@/lib/constants";
+import { currentUser, postItem, universities } from "@/lib/api";
 import type { Lang, University } from "@/lib/types";
 
-export function PostForm({
-  lang,
-  universities,
-  defaultKind,
-  defaultUniversityId,
-}: {
-  lang: Lang;
-  universities: University[];
-  defaultKind?: string;
-  defaultUniversityId?: string;
-}) {
-  const [state, action, pending] = useActionState(createItemAction, null);
-  const [uniId, setUniId] = useState(defaultUniversityId || universities[0]?.id);
-  const uni = useMemo(() => universities.find((u) => u.id === uniId), [universities, uniId]);
-
-  return (
-    <form action={action} className="card space-y-4 p-6">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <select className="select" name="kind" defaultValue={defaultKind === "found" ? "found" : "lost"}>
-          {KINDS.map((k) => (
-            <option key={k.id} value={k.id}>
-              {lang === "uz" ? k.uz : k.en}
-            </option>
-          ))}
-        </select>
-        <select className="select" name="category" defaultValue="electronics">
-          {CATEGORIES.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.emoji} {lang === "uz" ? c.uz : c.en}
-            </option>
-          ))}
-        </select>
-      </div>
-      <input
-        className="input"
-        name="title"
-        required
-        placeholder={lang === "uz" ? "Masalan: Oq AirPods, yashil stiker" : "e.g. White AirPods, green sticker"}
-      />
-      <textarea
-        className="textarea"
-        name="description"
-        required
-        placeholder={lang === "uz" ? "Joy, belgi, nima ichida edi…" : "Place, marks, what was inside…"}
-      />
-      <div className="grid gap-3 sm:grid-cols-2">
-        <select className="select" name="universityId" value={uniId} onChange={(e) => setUniId(e.target.value)}>
-          {universities.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.short}
-            </option>
-          ))}
-        </select>
-        <select className="select" name="spotId" required>
-          {(uni?.spots ?? []).map((s) => (
-            <option key={s.id} value={s.id}>
-              {lang === "uz" ? s.nameUz : s.nameEn}
-            </option>
-          ))}
-        </select>
-      </div>
-      <input className="input" type="datetime-local" name="occurredAt" required />
-      <div className="grid gap-3 sm:grid-cols-2">
-        <input className="input" name="color" placeholder={lang === "uz" ? "Rang" : "Color"} />
-        <input className="input" name="brand" placeholder={lang === "uz" ? "Brend / belgi" : "Brand / mark"} />
-      </div>
-      <input
-        className="input"
-        name="secretQuestion"
-        placeholder={lang === "uz" ? "Maxfiy savol (ixtiyoriy)" : "Secret question (optional)"}
-      />
-      <input className="input" name="secretAnswer" placeholder={lang === "uz" ? "Javob" : "Answer"} />
-      {state && "error" in state && state.error ? (
-        <p className="text-sm text-[var(--coral)]">{state.error}</p>
-      ) : null}
-      <button className="btn btn-primary w-full" disabled={pending}>
-        {pending ? "…" : lang === "uz" ? "E’lonni chiqarish" : "Publish"}
-      </button>
-    </form>
-  );
+export function PostForm({ lang, defaultKind }: { lang: Lang; defaultKind?: string }) {
+  const router = useRouter(); const [list, setList] = useState<University[]>([]); const [uniId, setUniId] = useState(""); const [error, setError] = useState(""); const [pending, setPending] = useState(false);
+  const uni = useMemo(() => list.find((entry) => entry.id === uniId), [list, uniId]);
+  useEffect(() => { const user = currentUser(); if (!user) { router.replace("/login"); return; } universities().then((data) => { setList(data); setUniId(user.universityId || data[0]?.id || ""); }).catch(() => setError("Universitetlar yuklanmadi.")); }, [router]);
+  async function submit(form: FormData) { setError(""); setPending(true); try { const item = await postItem({ kind: String(form.get("kind")) as "lost" | "found", category: String(form.get("category")) as never, title: String(form.get("title")), description: String(form.get("description")), universityId: uniId, spotId: String(form.get("spotId")), occurredAt: new Date(String(form.get("occurredAt"))).toISOString(), color: String(form.get("color")) || undefined, brand: String(form.get("brand")) || undefined, secretQuestion: String(form.get("secretQuestion")) || undefined, secretAnswer: String(form.get("secretAnswer")) || undefined }); router.push(`/items/${item.id}`); } catch (reason) { setError(reason instanceof Error ? reason.message : "E’lon joylanmadi."); setPending(false); } }
+  return <form action={submit} className="card space-y-4 p-6"><div className="grid gap-3 sm:grid-cols-2"><select className="select" name="kind" defaultValue={defaultKind === "found" ? "found" : "lost"}>{KINDS.map((kind) => <option key={kind.id} value={kind.id}>{lang === "uz" ? kind.uz : kind.en}</option>)}</select><select className="select" name="category" defaultValue="electronics">{CATEGORIES.map((category) => <option key={category.id} value={category.id}>{category.emoji} {lang === "uz" ? category.uz : category.en}</option>)}</select></div><input className="input" name="title" required placeholder="Masalan: Oq AirPods" /><textarea className="textarea" name="description" required placeholder="Joy va belgi..." /><div className="grid gap-3 sm:grid-cols-2"><select className="select" value={uniId} onChange={(event) => setUniId(event.target.value)} disabled={!list.length}>{list.map((entry) => <option key={entry.id} value={entry.id}>{entry.short}</option>)}</select><select className="select" name="spotId" required disabled={!uni}>{(uni?.spots || []).map((spot) => <option key={spot.id} value={spot.id}>{lang === "uz" ? spot.nameUz : spot.nameEn}</option>)}</select></div><input className="input" type="datetime-local" name="occurredAt" required /><div className="grid gap-3 sm:grid-cols-2"><input className="input" name="color" placeholder="Rang" /><input className="input" name="brand" placeholder="Brend / belgi" /></div><input className="input" name="secretQuestion" placeholder="Maxfiy savol (ixtiyoriy)" /><input className="input" name="secretAnswer" placeholder="Javob" />{error && <p className="text-sm text-[var(--coral)]">{error}</p>}<button className="btn btn-primary w-full" disabled={pending || !uni}>{pending ? "..." : lang === "uz" ? "E’lonni chiqarish" : "Publish"}</button></form>;
 }

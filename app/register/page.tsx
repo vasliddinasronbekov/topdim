@@ -1,5 +1,4 @@
 import { RegisterForm } from "@/components/auth-forms";
-import { getDb } from "@/lib/db";
 import { getLang, t } from "@/lib/i18n";
 
 export default async function RegisterPage() {
@@ -11,7 +10,7 @@ export default async function RegisterPage() {
         {lang === "uz" ? "Talabalar uchun bepul." : "Free for students."}
       </p>
       <div className="mt-8">
-        <RegisterForm lang={lang} universities={getDb().universities} />
+        <RegisterForm lang={lang} />
       </div>
     </div>
   );

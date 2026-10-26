@@ -1,7 +1,4 @@
-import { redirect } from "next/navigation";
 import { PostForm } from "@/components/post-form";
-import { getUser } from "@/lib/auth";
-import { getDb } from "@/lib/db";
 import { getLang, t } from "@/lib/i18n";
 
 export default async function PostPage({
@@ -9,11 +6,8 @@ export default async function PostPage({
 }: {
   searchParams: Promise<{ kind?: string }>;
 }) {
-  const user = await getUser();
-  if (!user) redirect("/login");
   const { kind } = await searchParams;
   const lang = await getLang();
-  const unis = getDb().universities;
 
   return (
     <div className="mx-auto max-w-xl px-4 py-12">
@@ -22,9 +16,7 @@ export default async function PostPage({
       <div className="mt-8">
         <PostForm
           lang={lang}
-          universities={unis}
           defaultKind={kind}
-          defaultUniversityId={user.universityId}
         />
       </div>
     </div>
