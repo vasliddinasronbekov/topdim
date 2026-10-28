@@ -9,13 +9,43 @@ import { getLang } from "@/lib/i18n";
 import { matchesFor, reasonLabel } from "@/lib/matching";
 import { getItem, getUniversity } from "@/lib/queries";
 import { categoryMeta } from "@/lib/constants";
+import { getItemApi, toUniversity, universities as apiUniversities } from "@/lib/api";
+import type { Item } from "@/lib/types";
 
 export default async function ItemPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const item = getItem(id);
+  let item: Item | null = getItem(id);
+  if (!item) {
+    item = await getItemApi(id);
+  }
   if (!item) notFound();
-  const uni = getUniversity(item.universityId);
-  if (!uni) notFound();
+  let uni = getUniversity(item.universityId);
+  if (!uni) {
+    try {
+      const list = await apiUniversities();
+      uni = list.find((u) => u.id === item!.universityId) || null;
+      if (uni && !uni.spots.find((s) => s.id === item!.spotId)) {
+        uni = { ...uni, spots: [...uni.spots, { id: item!.spotId, nameUz: (item as any).spot_name || item!.spotId, nameEn: (item as any).spot_name || item!.spotId, x: 50, y: 50 }] } as any;
+      }
+    } catch {}
+  }
+  if (!uni) {
+    // last resort fallback
+    uni = {
+      id: item.universityId,
+      slug: item.universityId,
+      nameUz: (item as any).university_name || item.universityId,
+      nameEn: (item as any).university_name || item.universityId,
+      short: (item as any).university_name?.slice(0, 4) || item.universityId.toUpperCase(),
+      city: "",
+      students: 0,
+      partner: "none",
+      accent: "#14372c",
+      blurbUz: "",
+      blurbEn: "",
+      spots: [{ id: item.spotId, nameUz: (item as any).spot_name || item.spotId, nameEn: (item as any).spot_name || item.spotId, x: 50, y: 50 }],
+    } as any;
+  }
   const lang = await getLang();
   const user = await getUser();
   const db = getDb();

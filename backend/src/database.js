@@ -64,6 +64,7 @@ function seed() {
     ["tatu", "Toshkent axborot texnologiyalari universiteti", "TATU", "Toshkent", [["tatu-library", "Kutubxona", 22, 35], ["tatu-main", "Bosh bino", 50, 50], ["tatu-canteen", "Oshxona", 70, 68]]],
     ["wiut", "Westminster International University in Tashkent", "WIUT", "Toshkent", [["wiut-library", "Library", 25, 35], ["wiut-atrium", "Atrium", 50, 50], ["wiut-cafe", "Cafe", 75, 65]]],
     ["inha", "INHA University in Tashkent", "INHA", "Toshkent", [["inha-lobby", "Main lobby", 45, 45], ["inha-library", "Library", 25, 30]]],
+    ["adu", "Andijon Davlat Universiteti", "ADU", "Andijon", [["adu-main", "Asosiy bino", 50, 45], ["adu-library", "Kutubxona", 30, 35], ["adu-canteen", "Oshxona", 65, 65]]],
   ];
   const transaction = db.transaction(() => {
     for (const [id, name, shortName, city, spots] of seedData) {

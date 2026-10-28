@@ -33,3 +33,11 @@ export async function items(params = "") { const result = await request<ApiItem[
 export async function signIn(email: string, password: string) { const data = await request<{ token: string; user: PublicUser }>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }); setSession(data.token, data.user); return data.user; }
 export async function signUp(payload: { name: string; email: string; password: string; universityId: string }) { const data = await request<{ token: string; user: PublicUser }>("/auth/register", { method: "POST", body: JSON.stringify(payload) }); setSession(data.token, data.user); return data.user; }
 export async function postItem(payload: { kind: Kind; title: string; description: string; category: Category; universityId: string; spotId: string; occurredAt: string; color?: string; brand?: string; secretQuestion?: string; secretAnswer?: string }) { return toItem(await request<ApiItem>("/items", { method: "POST", body: JSON.stringify(payload) })); }
+export async function getItemApi(id: string): Promise<Item | null> {
+  try {
+    const item = await request<ApiItem>(`/items/${id}`);
+    return toItem(item);
+  } catch {
+    return null;
+  }
+}

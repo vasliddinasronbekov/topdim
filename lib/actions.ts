@@ -237,3 +237,53 @@ export async function partnerLeadAction(_prev: unknown, form: FormData) {
   return { ok: true as const };
 }
 
+export async function addUniversityAction(_prev: unknown, form: FormData) {
+  const user = await getUser();
+  if (!user || user.role !== "admin") {
+    return { error: "Faqat adminlar uchun." };
+  }
+  const id = formStr(form, "id").toLowerCase().replace(/[^a-z0-9_-]/g, "");
+  const nameUz = formStr(form, "nameUz");
+  const nameEn = formStr(form, "nameEn") || nameUz;
+  const short = formStr(form, "short").toUpperCase();
+  const city = formStr(form, "city") || "Toshkent";
+  const students = Number(formStr(form, "students")) || 0;
+  const accent = formStr(form, "accent") || "#2D6A4F";
+  const blurbUz = formStr(form, "blurbUz") || "";
+  const blurbEn = formStr(form, "blurbEn") || blurbUz;
+
+  if (!id || !nameUz || !short) {
+    return { error: "ID, nom (uz) va qisqartma majburiy." };
+  }
+  const db = getDb();
+  if (db.universities.some((u) => u.id === id || u.slug === id)) {
+    return { error: "Bunday ID allaqachon mavjud." };
+  }
+
+  mutate((d) => {
+    d.universities.push({
+      id,
+      slug: id,
+      nameUz,
+      nameEn,
+      short,
+      city,
+      students,
+      partner: "none",
+      accent,
+      blurbUz,
+      blurbEn,
+      spots: [
+        { id: "main", nameUz: "Asosiy bino", nameEn: "Main building", x: 50, y: 45 },
+        { id: "lib", nameUz: "Kutubxona", nameEn: "Library", x: 30, y: 35 },
+        { id: "canteen", nameUz: "Oshxona", nameEn: "Canteen", x: 65, y: 65 },
+        { id: "gate", nameUz: "Asosiy darvoza", nameEn: "Main gate", x: 15, y: 55 },
+        { id: "yard", nameUz: "Hovli", nameEn: "Yard", x: 75, y: 30 },
+      ],
+    });
+  });
+  revalidatePath("/admin");
+  revalidatePath("/universities");
+  return { ok: true as const };
+}
+

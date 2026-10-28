@@ -97,12 +97,16 @@ export function scorePair(base: Item, other: Item): MatchHit | null {
 }
 
 export function matchesFor(item: Item, limit = 6): MatchHit[] {
-  const db = getDb();
-  return db.items
-    .map((other) => scorePair(item, other))
-    .filter((x): x is MatchHit => Boolean(x))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit);
+  try {
+    const db = getDb();
+    return db.items
+      .map((other) => scorePair(item, other))
+      .filter((x): x is MatchHit => Boolean(x))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
+  } catch {
+    return [];
+  }
 }
 
 export function reasonLabel(code: string, lang: Lang) {
@@ -121,12 +125,16 @@ export function reasonLabel(code: string, lang: Lang) {
 }
 
 export function personalMatches(userId: string) {
-  const db = getDb();
-  const mine = db.items.filter((i) => i.userId === userId && i.status === "open");
-  return mine.flatMap((item) =>
-    matchesFor(item, 4).map((hit) => ({
-      mine: item,
-      ...hit,
-    })),
-  );
+  try {
+    const db = getDb();
+    const mine = db.items.filter((i) => i.userId === userId && i.status === "open");
+    return mine.flatMap((item) =>
+      matchesFor(item, 4).map((hit) => ({
+        mine: item,
+        ...hit,
+      })),
+    );
+  } catch {
+    return [];
+  }
 }

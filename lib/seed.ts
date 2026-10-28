@@ -166,6 +166,26 @@ export const UNIVERSITIES: University[] = [
       ["dean", "Dekanat", "Dean’s office", 18, 70],
     ]),
   },
+  {
+    id: "adu",
+    slug: "adu",
+    nameUz: "Andijon Davlat Universiteti",
+    nameEn: "Andijan State University",
+    short: "ADU",
+    city: "Andijon",
+    students: 15000,
+    partner: "none",
+    accent: "#2D6A4F",
+    blurbUz: "Andijon Davlat Universiteti — talabalar uchun yo‘qolgan va topilgan buyumlar markazi.",
+    blurbEn: "Andijan State University — hub for lost and found items.",
+    spots: spots([
+      ["main", "Asosiy bino", "Main building", 50, 45],
+      ["lib", "Kutubxona", "Library", 30, 35],
+      ["canteen", "Oshxona", "Canteen", 65, 65],
+      ["gate", "Asosiy darvoza", "Main gate", 15, 55],
+      ["yard", "Hovli", "Yard", 75, 30],
+    ]),
+  },
 ];
 
 function item(
