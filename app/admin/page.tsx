@@ -11,6 +11,11 @@ export default async function AdminPage() {
   const lang = await getLang();
   const db = getDb();
 
+  async function handleAdd(formData: FormData) {
+    "use server";
+    await addUniversityAction(undefined, formData);
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <p className="text-xs uppercase tracking-[0.25em] text-[var(--ink-soft)]">Admin</p>
@@ -19,7 +24,7 @@ export default async function AdminPage() {
 
       <section className="mt-10">
         <h2 className="serif text-3xl">{lang === "uz" ? "Universitet qo‘shish" : "Add university"}</h2>
-        <form action={addUniversityAction} className="card mt-4 grid gap-3 p-6 md:grid-cols-2">
+        <form action={handleAdd} className="card mt-4 grid gap-3 p-6 md:grid-cols-2">
           <label className="grid gap-1 text-sm">
             <span className="text-[var(--ink-soft)]">ID (slug)</span>
             <input name="id" required className="input" placeholder="adu" />

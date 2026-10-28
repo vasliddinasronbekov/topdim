@@ -9,7 +9,7 @@ import { getLang } from "@/lib/i18n";
 import { matchesFor, reasonLabel } from "@/lib/matching";
 import { getItem, getUniversity } from "@/lib/queries";
 import { categoryMeta } from "@/lib/constants";
-import { getItemApi, toUniversity, universities as apiUniversities } from "@/lib/api";
+import { getItemApi, universities as apiUniversities } from "@/lib/api";
 import type { Item } from "@/lib/types";
 
 export default async function ItemPage({ params }: { params: Promise<{ id: string }> }) {
@@ -30,13 +30,12 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
     } catch {}
   }
   if (!uni) {
-    // last resort fallback
     uni = {
       id: item.universityId,
       slug: item.universityId,
       nameUz: (item as any).university_name || item.universityId,
       nameEn: (item as any).university_name || item.universityId,
-      short: (item as any).university_name?.slice(0, 4) || item.universityId.toUpperCase(),
+      short: ((item as any).university_name || item.universityId).toString().slice(0, 4).toUpperCase(),
       city: "",
       students: 0,
       partner: "none",
@@ -52,11 +51,15 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
   const owner = db.users.find((u) => u.id === item.userId);
   const hits = matchesFor(item);
   const cat = categoryMeta(item.category);
+  const desc = String((item as any).description || "");
+  const imgMatch = desc.match(/\[IMAGE:(data:image\/[^;]+;base64,[^\]]+)\]/);
+  const cleanDesc = imgMatch ? desc.replace(imgMatch[0], "").trim() : desc;
 
   return (
     <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1.1fr_0.9fr]">
       <article>
         <ItemPoster item={item} className="min-h-[280px]" />
+        {imgMatch && <img src={imgMatch[1]} alt={item.title} className="mt-4 w-full max-h-[420px] rounded-2xl object-cover" />}
         <div className="mt-5 flex flex-wrap gap-2">
           <span className={item.kind === "lost" ? "chip chip-lost" : "chip chip-found"}>
             {item.kind === "lost" ? (lang === "uz" ? "Yo‘qolgan" : "Lost") : lang === "uz" ? "Topilgan" : "Found"}
@@ -67,14 +70,14 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
           <span className="chip bg-black/5">{item.status}</span>
         </div>
         <h1 className="serif mt-4 text-4xl md:text-5xl">{item.title}</h1>
-        <p className="mt-4 text-lg leading-relaxed text-[var(--ink-soft)]">{item.description}</p>
+        <p className="mt-4 text-lg leading-relaxed text-[var(--ink-soft)] whitespace-pre-line">{cleanDesc || desc.replace(/\[IMAGE:[^\]]+\]/, "").trim()}</p>
         <dl className="mt-8 grid gap-4 sm:grid-cols-2">
           <div className="card p-4">
             <dt className="text-xs uppercase tracking-wide text-[var(--ink-soft)]">
               {lang === "uz" ? "Joy" : "Place"}
             </dt>
             <dd className="mt-1 font-semibold">
-              {uniName(uni, lang)} · {spotName(uni, item.spotId, lang)}
+              {uni ? uniName(uni, lang) : (item as any).university_name || item.universityId} · {uni ? spotName(uni, item.spotId, lang) : (item as any).spot_name || item.spotId}
             </dd>
           </div>
           <div className="card p-4">
@@ -85,7 +88,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
           </div>
         </dl>
         <p className="mt-4 text-sm text-[var(--ink-soft)]">
-          {lang === "uz" ? "E’lon muallifi" : "Posted by"} · {owner?.name ?? "—"}
+          {lang === "uz" ? "E’lon muallifi" : "Posted by"} · {owner?.name ?? (item as any).userId ?? "—"}
         </p>
         {user && user.id !== item.userId && item.status !== "reunited" ? (
           <ClaimForm itemId={item.id} secretQuestion={item.secretQuestion} lang={lang} />
@@ -111,14 +114,14 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
             </p>
           )}
           {hits.map((hit) => {
-            const hu = getUniversity(hit.item.universityId);
+            const hu = getUniversity(hit.item.universityId) || uni;
             return (
               <Link key={hit.item.id} href={`/items/${hit.item.id}`} className="card block p-4 hover:-translate-y-0.5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="font-semibold">{hit.item.title}</p>
                     <p className="text-sm text-[var(--ink-soft)]">
-                      {hu ? spotName(hu, hit.item.spotId, lang) : ""} · {formatWhen(hit.item.occurredAt, lang)}
+                      {hu ? spotName(hu, hit.item.spotId, lang) : (hit.item as any).spot_name || ""} · {formatWhen(hit.item.occurredAt, lang)}
                     </p>
                     <p className="mt-2 text-xs text-[var(--pine-2)]">
                       {hit.reasons.map((r) => reasonLabel(r, lang)).join(" · ")}
