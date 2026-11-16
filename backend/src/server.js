@@ -35,7 +35,7 @@ function auth(req, res, next) {
 }
 function parse(schema, body, res) {
   const result = schema.safeParse(body);
-  if (!result.success) { res.status(422).json({ error: "Please check the highlighted fields.", details: z.flattenError(result.error).fieldErrors }); return null; }
+  if (!result.success) { const fieldErrors = z.flattenError(result.error).fieldErrors || {}; const fields = Object.entries(fieldErrors).filter(([, v]) => Array.isArray(v) && v.length > 0).map(([k]) => k); const errorMessage = fields.length ? `Please check the highlighted fields: ${fields.join(", ")}.` : "Please check the highlighted fields."; res.status(422).json({ error: errorMessage, details: fieldErrors }); return null; }
   return result.data;
 }
 function itemRow(item) {
