@@ -593,6 +593,33 @@ export function createSeed(): Database {
       emoji: "🔐",
       hue: 150,
     }),
+    item({
+      kind: "lost",
+      title: "Oq qulki, Andijon shahar markazida",
+      description: "Andijon Davlat Universiteti kampusida dars zonasida tushib qolgan. Qulki ochki qisqa.",
+      category: "keys",
+      universityId: "adu",
+      spotId: "adu-lib",
+      occurredAt: daysAgo(1, 10),
+      userId: "u_aziz",
+      color: "oq",
+      emoji: "🔑",
+      hue: 40,
+    }),
+    item({
+      kind: "found",
+      title: "Oq qulad, Andijon kampusida",
+      description: "Andijon Davlat Universiteti kampusida ofisda qolgan. Qutisida kompyuter qutisi bor.",
+      category: "electronics",
+      universityId: "adu",
+      spotId: "adu-main",
+      occurredAt: daysAgo(2, 14),
+      userId: "u_malika",
+      color: "oq",
+      brand: "Anker",
+      emoji: "🔌",
+      hue: 190,
+    }),
   ];
 
   return {

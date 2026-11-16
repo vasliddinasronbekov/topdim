@@ -10,7 +10,7 @@ export default async function Home() {
   const db = getDb();
   const s = stats();
   const latest = [...db.items]
-    .filter((i) => i.status !== "closed")
+    .filter((i) => i.status !== "closed" && i.universityId === "adu")
     .sort((a, b) => (a.occurredAt < b.occurredAt ? 1 : -1))
     .slice(0, 6);
   const uniById = Object.fromEntries(db.universities.map((u) => [u.id, u]));
