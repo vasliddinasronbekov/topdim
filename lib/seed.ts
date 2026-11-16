@@ -666,7 +666,7 @@ export function createSeed(): Database {
     item({
       id: "it_tatu_aner_found",
       kind: "found",
-      title: "Anker zaryadlovchi, kampusda",
+      title: "Anker zaryadlovchi, kampusda topildi",
       description: "ADU kampusida topildi. Oq rangli, kabeli 1 metr.",
       category: "electronics",
       universityId: "adu",
